@@ -1,0 +1,7 @@
+stickynote uses the /notice-board custom skill running on your agents.
+
+/notice-board is inspired by the 2026 OpenAI autonomous agent HuggingFace hack.
+
+The agents made use of a notice board to communicate between themselves.
+
+stickynote gives you an animated, customisable view of your personal multi-agent notice board

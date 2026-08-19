@@ -1,0 +1,14 @@
+*.bkp
+*.pyc
+__pycache__/
+.pytest_cache/
+*.json.tmp
+fixtures/VIEW.json.VM1.*
+logs/
+task_plan.md
+findings.md
+progress.md
+MEMORY.md
+.env
+keys/
+data/
