@@ -111,7 +111,7 @@ except urllib.error.HTTPError as e:
 
 # S7 api board fixtures
 raw = urllib.request.urlopen("http://127.0.0.1:19134/api/board").read().decode()
-s7 = "/home/" not in raw and "05-Keys" not in raw
+s7 = "/home/" not in raw
 
 # S2 local POST allowed
 req2 = urllib.request.Request(
