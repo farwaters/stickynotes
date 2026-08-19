@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cork">
+<head>
+  <meta charset="utf-8">
+  <title>Notice board</title>
+  <script>
+    if (/(?:^|[?&])embed(?:[=&]|$)/.test(location.search)) document.documentElement.classList.add("embed");
+    try {
+      var t = localStorage.getItem("stickynote-theme");
+      if (t === "void" || t === "cork") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --ink: #2a2118;
+      --mute: #6b5a48;
+      --ask: #fff3a0;
+      --warn: #ffb347;
+      --block: #ff8a80;
+      --decide: #90caf9;
+      --learn: #c5e1a5;
+      --find: #e1bee7;
+      --done: #ece7dc;
+      --wood: #3a2a1c;
+      --ui-ink: #2a2118;
+      --head: rgba(42, 33, 24, .9);
+      --head-ink: #f4ead8;
+      --meta: #cbb89a;
+      --gutter-bg: rgba(42, 33, 24, .88);
+      --col-bg: rgba(255,248,230,.12);
+      --col-rule: rgba(42,33,24,.22);
+      --col-title: #3a2a1c;
+      --h2: #4a3828;
+      --foot: #4a3828;
+      --chip-bg: rgba(255,248,230,.72);
+      --chip-on: #2a2118;
+      --page:
+        radial-gradient(circle at 18% 22%, rgba(255,255,255,.14), transparent 18%),
+        radial-gradient(circle at 72% 68%, rgba(80,40,10,.12), transparent 22%),
+        repeating-radial-gradient(circle at 0 0, #b88a52 0 1px, transparent 1px 11px),
+        linear-gradient(165deg, #d4b07a, #b88950 55%, #a87a44);
+    }
+    html[data-theme="void"] {
+      --ui-ink: #ece7dc;
+      --mute: #8d877c;
+      --done: #1a1d22;
+      --wood: #2c323a;
+      --head: #07080b;
+      --head-ink: #ece7dc;
+      --meta: #8d877c;
+      --gutter-bg: #12151a;
+      --col-bg: #12151a;
+      --col-rule: #2c323a;
+      --col-title: #c4a06a;
+      --h2: #8d877c;
+      --foot: #8d877c;
+      --chip-bg: #12151a;
+      --chip-on: #c4a06a;
+      --page:
+        linear-gradient(#12151a 1px, transparent 1px),
+        linear-gradient(90deg, #12151a 1px, transparent 1px),
+        #07080b;
+      --page-size: 28px 28px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      color: var(--ui-ink);
+      font: 14px/1.35 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      background: var(--page);
+      background-size: var(--page-size, auto);
+    }
+    .mast {
+      display: flex; flex-wrap: wrap; align-items: stretch;
+      justify-content: space-between;
+      background: #07080b; border-bottom: 1px solid #2c323a;
+    }
+    .lockup {
+      display: flex; align-items: baseline; gap: .65rem;
+      padding: .7rem 1.2rem; color: #ece7dc;
+    }
+    .brand { letter-spacing: .22em; font-weight: 650; font-size: .78rem; }
+    .prod { color: #c4a06a; letter-spacing: .08em; font-size: .72rem; text-transform: uppercase; }
+    .tabs { display: flex; }
+    .tabs a {
+      color: #8d877c; text-decoration: none; padding: .75rem 1.15rem;
+      font-size: .82rem; border-left: 1px solid #2c323a;
+    }
+    .tabs a.on { color: #ece7dc; box-shadow: inset 0 -2px 0 #c4a06a; }
+    .tabs a:hover { color: #ece7dc; }
+    .badge {
+      display: inline-block; min-width: 1.1rem; padding: 0 .28rem;
+      border-radius: 999px; background: #fff3a0; color: #2a2118;
+      font-size: .68rem; font-weight: 700; text-align: center;
+    }
+    header {
+      position: sticky; top: 0; z-index: 5;
+      display: flex; flex-wrap: wrap; gap: .6rem 1rem;
+      align-items: baseline; justify-content: space-between;
+      padding: .7rem 1.1rem;
+      background: var(--head);
+      color: var(--head-ink);
+      backdrop-filter: blur(6px);
+    }
+    header h1 { margin: 0; font-size: 1.05rem; font-weight: 650; letter-spacing: .02em; }
+    .meta { color: var(--meta); font-size: .78rem; }
+    .counts b { color: #fff3a0; font-weight: 650; }
+    html[data-theme="void"] .counts b { color: #c4a06a; }
+    .head-tools { display: flex; flex-wrap: wrap; gap: .7rem 1rem; align-items: center; }
+    .skin-switch {
+      display: flex; align-items: center; gap: .4rem;
+      font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--meta); user-select: none;
+    }
+    .skin-track {
+      position: relative; width: 2.7rem; height: 1.28rem; padding: 0;
+      border-radius: 999px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.28);
+    }
+    .skin-knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 1.05rem; height: 1.05rem; border-radius: 50%;
+      background: #fff3a0;
+      transition: transform .22s ease, background .22s ease;
+    }
+    html[data-theme="void"] .skin-knob {
+      transform: translateX(1.28rem);
+      background: #c4a06a;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .skin-knob { transition: none; }
+    }
+    #tick { color: #fff3a0; min-height: 1.1em; }
+    .chips { display: flex; flex-wrap: wrap; gap: .35rem; padding: .55rem 1.1rem 0; }
+    .chip {
+      border: 1px solid var(--col-rule);
+      background: var(--chip-bg);
+      color: var(--ui-ink);
+      border-radius: 999px;
+      padding: .22rem .65rem;
+      font: inherit; font-size: .78rem;
+      cursor: pointer;
+    }
+    .chip.on { background: var(--chip-on); color: #f4ead8; border-color: var(--chip-on); }
+    html[data-theme="void"] .chip.on { color: #07080b; }
+    html:not(.embed), html:not(.embed) body { height: 100%; overflow: hidden; }
+    html:not(.embed) body { display: flex; flex-direction: column; }
+    html:not(.embed) .chips { flex: 0 0 auto; }
+    html:not(.embed) main {
+      flex: 1; min-height: 0; height: auto;
+      display: flex; flex-direction: column;
+      overflow: hidden; padding: .4rem 1rem 0;
+    }
+    html:not(.embed) footer { flex: 0 0 auto; padding: .25rem 1.1rem .45rem; }
+    #stage { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    #gutter {
+      flex: 0 0 auto;
+      display: flex; flex-direction: column; align-items: stretch; gap: .35rem;
+      min-height: 3.4rem; padding: .35rem .45rem;
+      background: var(--gutter-bg); color: var(--head-ink);
+    }
+    .gutter-rail {
+      display: flex; align-items: center; gap: .5rem; min-width: 0;
+    }
+    #gutter-notes, #parked {
+      display: flex; flex-wrap: nowrap; gap: .4rem;
+      overflow-x: auto; flex: 1; min-width: 0;
+      overscroll-behavior-x: contain;
+    }
+    #gutter .note, #parked .note {
+      width: 8.2rem; min-height: 5.2rem; padding: .5rem .45rem .3rem;
+      flex: 0 0 auto;
+    }
+    #parked-toggle {
+      border: 1px solid rgba(244,234,216,.35); background: transparent;
+      color: #f4ead8; font: inherit; font-size: .72rem;
+      padding: .25rem .55rem; border-radius: 999px; cursor: pointer; white-space: nowrap;
+    }
+    #parked-toggle[aria-expanded="true"] { background: rgba(255,255,255,.12); }
+    #parked-sec { min-width: 0; }
+    #parked-sec[hidden] { display: none !important; }
+    .strip-nav {
+      flex: 0 0 auto; width: 1.6rem; height: 1.6rem; padding: 0;
+      border: 1px solid rgba(244,234,216,.35); background: transparent;
+      color: #f4ead8; font: inherit; font-size: 1.1rem; line-height: 1;
+      border-radius: 999px; cursor: pointer;
+    }
+    .strip-nav:disabled { opacity: .35; cursor: default; }
+    main { padding: .4rem 1rem 2rem; }
+    section > h2 {
+      margin: .9rem 0 .45rem;
+      font-size: .68rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--h2);
+    }
+    .hint { font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--mute); margin-left: .4rem; }
+    #live {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(16.5rem, 1fr));
+      gap: .85rem;
+      min-height: 0; flex: 1; overflow: auto;
+    }
+    .col {
+      background: var(--col-bg);
+      border: 1px dashed var(--col-rule);
+      border-radius: 6px;
+      padding: .55rem .55rem .8rem;
+      min-height: 12rem;
+    }
+    html[data-theme="void"] .col { border-style: solid; border-radius: 0; }
+    .col h3 {
+      margin: 0 0 .55rem;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--col-title);
+    }
+    .col .n { color: var(--mute); font-weight: 400; }
+    .col-notes { display: flex; flex-wrap: wrap; gap: .75rem .85rem; align-items: flex-start; }
+    #pulled { display: flex; flex-wrap: wrap; gap: .55rem; min-height: 2rem; }
+    .note {
+      position: relative;
+      width: 13.4rem;
+      min-height: 11.2rem;
+      padding: 1.05rem .8rem .7rem;
+      box-shadow: 2px 4px 0 rgba(60,35,10,.18), 0 10px 18px rgba(40,20,5,.18);
+      color: var(--ink);
+      transform: rotate(var(--rot, -1deg));
+      transition: transform .18s ease, opacity .2s ease, filter .2s ease;
+    }
+    .note::before {
+      content: "";
+      position: absolute; top: -8px; left: 50%; width: .55rem; height: .55rem;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #fff 0 20%, #c0392b 21% 100%);
+      box-shadow: 0 1px 1px rgba(0,0,0,.35);
+    }
+    .note:hover { transform: rotate(0deg) scale(1.03); z-index: 2; }
+    .note.kind-ASK { background: var(--ask); }
+    .note.kind-WARN { background: var(--warn); }
+    .note.kind-BLOCK { background: var(--block); }
+    .note.kind-DECIDE { background: var(--decide); }
+    .note.kind-LEARN { background: var(--learn); }
+    .note.kind-FIND { background: var(--find); }
+    .note.kind-DONE, .note.lane-pulled { background: var(--done); }
+    .note.lane-gutter { width: 8.2rem; min-height: 5.2rem; filter: saturate(.9); }
+    .note.lane-parked { filter: saturate(.85); }
+    .note.lane-pulled {
+      width: 10.4rem; min-height: 7.2rem; opacity: .72;
+      filter: grayscale(.25);
+    }
+    .note.scope-chat { outline: 2px dashed rgba(42,33,24,.28); }
+    .note.arrive {
+      animation: drop .72s cubic-bezier(.16, 1, .3, 1) both;
+      animation-delay: var(--arrive-delay, 0ms);
+    }
+    .note.leaving { animation: peel .48s ease-in forwards; pointer-events: none; }
+    .note.hid { display: none; }
+    .col.hid { display: none; }
+    @keyframes drop {
+      from { transform: translate(var(--from-x, -42vw), -22vh) rotate(-26deg) scale(.5); opacity: 0; }
+    }
+    @keyframes peel {
+      to { transform: translateY(28vh) rotate(18deg) scale(.42); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .note.arrive, .note.leaving { animation: none !important; }
+    }
+    .kind { font-size: .66rem; letter-spacing: .08em; font-weight: 700; display: inline; }
+    .chatpill { margin-top: 0; }
+    .slug { font-weight: 650; margin: .15rem 0 .25rem; word-break: break-word; }
+    .body { font-size: .8rem; max-height: 5.4rem; overflow: hidden; }
+    .from, .home, .age {
+      color: var(--mute); font-size: .68rem; margin-top: .2rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .chatpill {
+      display: inline-block; margin-left: .3rem;
+      background: rgba(42,33,24,.12); border-radius: 3px;
+      padding: 0 .28rem; font-weight: 600; letter-spacing: 0;
+    }
+    .acts { display: flex; gap: .25rem; margin-top: .45rem; }
+    .acts button {
+      border: 0; background: rgba(42,33,24,.1);
+      color: var(--ink); font: inherit; font-size: .68rem;
+      padding: .15rem .4rem; border-radius: 4px; cursor: pointer;
+    }
+    .acts button:hover { background: rgba(42,33,24,.2); }
+    .empty { color: var(--h2); font-size: .85rem; padding: .4rem 0; }
+    footer { padding: 0 1.1rem 1.4rem; color: var(--foot); font-size: .75rem; }
+    footer a { color: inherit; }
+    html.embed .mast,
+    html.embed .chips,
+    html.embed footer,
+    html.embed #skin-switch,
+    html.embed #gutter,
+    html.embed #parked-sec,
+    html.embed #pulled-sec,
+    html.embed #pulled,
+    html.embed .acts,
+    html.embed .home,
+    html.embed .from { display: none !important; }
+    html.embed, html.embed body { height: auto; overflow: auto; }
+    html.embed header {
+      position: static; padding: .25rem .45rem;
+      font-size: .68rem;
+    }
+    html.embed header h1 { font-size: .72rem; }
+    html.embed .meta { font-size: .62rem; }
+    html.embed main { padding: .15rem .4rem .4rem; }
+    html.embed body {
+      min-height: 0; font-size: 11px; line-height: 1.25;
+    }
+    html.embed section > h2 { display: none; }
+    html.embed #live,
+    html.embed #parked {
+      display: flex; flex-wrap: wrap; gap: .35rem .4rem;
+      min-height: 0;
+    }
+    html.embed .col { display: none; }
+    html.embed .col-notes { gap: .35rem; }
+    html.embed .note {
+      width: 7.1rem; min-height: 5.6rem;
+      padding: .55rem .4rem .3rem;
+      font-size: .62rem;
+    }
+    html.embed .note.lane-pulled { display: none; }
+    html.embed .slug { font-size: .64rem; margin: .05rem 0 .1rem; }
+    html.embed .body { font-size: .58rem; max-height: 2.6rem; }
+    html.embed .age { font-size: .52rem; }
+  </style>
+</head>
+<body>
+  <header class="mast">
+    <div class="lockup">
+      <span class="brand">stickynote</span>
+    </div>
+    <nav class="tabs">
+      <a class="on" href="/notice-board">Notice board <span class="badge" id="tabbadge">0</span></a>
+    </nav>
+  </header>
+  <header>
+    <div>
+      <h1>Notice board</h1>
+      <div class="meta" id="sub">agents · one wall · updates while open</div>
+      <div class="meta" id="tick"></div>
+    </div>
+    <div class="head-tools">
+      <div class="meta counts" id="counts">…</div>
+      <div class="skin-switch" id="skin-switch" role="group" aria-label="Board skin">
+        <span>Cork</span>
+        <button type="button" id="skin-toggle" class="skin-track" role="switch" aria-checked="false" aria-label="Void skin">
+          <span class="skin-knob"></span>
+        </button>
+        <span>Void</span>
+      </div>
+    </div>
+  </header>
+  <div class="chips" id="chips"></div>
+  <main>
+    <section id="stage">
+      <h2>Live <span class="hint">in this frame — peel stays here</span></h2>
+      <div id="live"></div>
+      <div id="gutter">
+        <div class="gutter-rail">
+          <div id="gutter-notes"></div>
+          <button type="button" id="parked-toggle" aria-expanded="false" aria-controls="parked-sec">0 standing</button>
+        </div>
+        <div id="parked-sec" hidden>
+          <div class="gutter-rail">
+            <button type="button" class="strip-nav" id="parked-prev" aria-label="Earlier standing">‹</button>
+            <div id="parked" tabindex="0" aria-label="Standing notes, scroll sideways"></div>
+            <button type="button" class="strip-nav" id="parked-next" aria-label="More standing">›</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="pulled-sec" hidden>
+      <div id="pulled"></div>
+    </section>
+  </main>
+  <footer>
+    __VERSION__ · updates while open ·
+    <a href="/api/board" target="_blank" rel="noopener noreferrer">json</a>
+  </footer>
+<script>
+if (/(?:^|[?&])embed(?:=|&|$)/.test(location.search)) {
+  document.documentElement.classList.add("embed");
+}
+if (!document.documentElement.classList.contains("embed")) {
+  window.name = "stickynote-board";
+}
+const store = new Map();
+const cols = new Map();
+let filter = "all";
+let chipKey = "";
+let activeSet = new Set();
+let arriveN = 0;
+
+function themeOf() {
+  return document.documentElement.getAttribute("data-theme") === "void" ? "void" : "cork";
+}
+function applyTheme(t) {
+  t = t === "void" ? "void" : "cork";
+  document.documentElement.setAttribute("data-theme", t);
+  try { localStorage.setItem("stickynote-theme", t); } catch (e) {}
+  const sw = document.getElementById("skin-toggle");
+  if (sw) sw.setAttribute("aria-checked", t === "void" ? "true" : "false");
+}
+function reduceMotion() {
+  return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function isHexProject(name) {
+  const s = (name || "").trim();
+  if (!s) return false;
+  if (/^chat:/i.test(s)) return true;
+  if (/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(s)) return true;
+  if (/^[0-9a-f]{8,32}$/i.test(s)) return true;
+  return false;
+}
+function noteKey(n) {
+  return n.id || ((n.ts || "") + "::" + (n.slug || ""));
+}
+function rot(slug) {
+  let h = 0;
+  for (const c of slug) h = ((h << 5) - h + c.charCodeAt(0)) | 0;
+  return ((h % 9) - 4) + "deg";
+}
+function age(sec) {
+  if (sec == null || sec < 0) return "";
+  if (sec < 90) return "just now";
+  if (sec < 3600) return Math.round(sec / 60) + "m";
+  if (sec < 86400) return Math.round(sec / 3600) + "h";
+  return Math.round(sec / 86400) + "d";
+}
+function sig(n) {
+  return [n.lane, n.kind, n.status, n.body, n.scope, n.chat, n.from, n.home].join("\0");
+}
+function showNote(n) {
+  if (filter === "all") return true;
+  if (filter === "chat") return n.scope === "chat";
+  if (filter === "cross") return n.scope !== "chat";
+  return n.project === filter;
+}
+function applyFilter() {
+  store.forEach(rec => {
+    rec.el.classList.toggle("hid", !showNote(rec.note));
+  });
+  cols.forEach((col, project) => {
+    const vis = [...store.values()].some(r => r.note.lane === "live" && r.note.project === project && showNote(r.note));
+    col.wrap.classList.toggle("hid", !vis);
+  });
+}
+function parentFor(n) {
+  if (n.lane === "gutter") return document.getElementById("gutter-notes");
+  if (n.lane === "live") {
+    if (document.documentElement.classList.contains("embed")) {
+      return document.getElementById("live");
+    }
+    const p = n.project || "unknown";
+    if (isHexProject(p) || (activeSet.size && !activeSet.has(p))) {
+      return document.getElementById("live");
+    }
+    return colBox(p);
+  }
+  return document.getElementById(n.lane === "parked" ? "parked" : "pulled");
+}
+function colBox(project) {
+  let col = cols.get(project);
+  if (!col) {
+    const wrap = document.createElement("div");
+    wrap.className = "col";
+    wrap.dataset.project = project;
+    const h = document.createElement("h3");
+    const name = document.createElement("span");
+    name.textContent = project;
+    const n = document.createElement("span");
+    n.className = "n";
+    h.append(name, document.createTextNode(" "), n);
+    const box = document.createElement("div");
+    box.className = "col-notes";
+    wrap.append(h, box);
+    document.getElementById("live").append(wrap);
+    col = { wrap, box, count: n };
+    cols.set(project, col);
+  }
+  return col.box;
+}
+function refreshColCounts() {
+  cols.forEach((col, project) => {
+    const n = [...store.values()].filter(r => r.note.lane === "live" && r.note.project === project).length;
+    col.count.textContent = n ? "(" + n + ")" : "";
+    if (!n && !col.box.querySelector(".note:not(.leaving)")) {
+      col.wrap.remove();
+      cols.delete(project);
+    }
+  });
+}
+function refreshParkedToggle() {
+  const n = [...store.values()].filter(r => r.note.lane === "parked").length;
+  const b = document.getElementById("parked-toggle");
+  if (b) b.textContent = n + " standing";
+  syncStripNav();
+}
+function bindHScroll(el) {
+  if (!el || el.dataset.hscroll) return;
+  el.dataset.hscroll = "1";
+  el.addEventListener("wheel", ev => {
+    if (Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;
+    el.scrollLeft += ev.deltaY;
+    ev.preventDefault();
+  }, { passive: false });
+  el.addEventListener("scroll", syncStripNav, { passive: true });
+}
+function syncStripNav() {
+  const rail = document.getElementById("parked");
+  const prev = document.getElementById("parked-prev");
+  const next = document.getElementById("parked-next");
+  if (!rail || !prev || !next) return;
+  const max = rail.scrollWidth - rail.clientWidth - 4;
+  prev.disabled = rail.scrollLeft <= 4;
+  next.disabled = rail.scrollLeft >= max || max <= 0;
+}
+function fillTexts(el, n) {
+  const keep = ["arrive", "leaving", "hid"].filter(c => el.classList.contains(c));
+  el.className = ["note", "kind-" + (n.kind || "DONE"), "lane-" + n.lane]
+    .concat(n.scope === "chat" ? ["scope-chat"] : [], keep).join(" ");
+  el.dataset.slug = n.slug || "";
+  el.dataset.id = noteKey(n);
+  el.style.setProperty("--rot", rot(n.slug));
+  el.querySelector(".kind").textContent = (n.kind || "?") + (n.scope === "chat" ? " · chat" : " · cross");
+  const pill = el.querySelector(".chatpill");
+  if (n.chat) {
+    pill.hidden = false;
+    pill.textContent = n.chat;
+  } else {
+    pill.hidden = true;
+    pill.textContent = "";
+  }
+  el.querySelector(".slug").textContent = n.slug;
+  el.querySelector(".body").textContent = n.body || "";
+  el.querySelector(".from").textContent = n.from || n.project || "";
+  const home = el.querySelector(".home");
+  home.textContent = n.home || "";
+  home.title = n.home || "";
+  el.querySelector(".age").textContent = age(n.age_s);
+  const acts = el.querySelector(".acts");
+  acts.innerHTML = "";
+  const mk = (label, action) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    b.addEventListener("click", ev => {
+      ev.stopPropagation();
+      act(n.slug, action, el);
+    });
+    return b;
+  };
+  if (n.lane === "gutter") {
+    acts.append(mk("restick", "restick"), mk("discard", "discard"));
+  } else {
+    if (n.lane !== "pulled") acts.append(mk("peel", "peel"), mk("park", "park"));
+    if (n.lane !== "live") acts.append(mk("pin", "pin"));
+  }
+}
+function makeNote(n) {
+  const el = document.createElement("article");
+  el.dataset.slug = n.slug;
+  el.innerHTML = '<div class="kind"></div><span class="chatpill" hidden></span>' +
+    '<div class="slug"></div><div class="body"></div>' +
+    '<div class="from"></div><div class="home"></div><div class="age"></div>' +
+    '<div class="acts"></div>';
+  fillTexts(el, n);
+  return el;
+}
+function mount(el, n, animate) {
+  const dest = parentFor(n);
+  if (el.parentNode !== dest) dest.append(el);
+  if (animate && !reduceMotion()) {
+    const side = ((n.slug || "").length + arriveN) % 2 ? "42vw" : "-42vw";
+    el.style.setProperty("--from-x", side);
+    el.style.setProperty("--arrive-delay", ((arriveN++ % 10) * 45) + "ms");
+    el.classList.remove("leaving");
+    el.classList.add("arrive");
+    el.addEventListener("animationend", () => el.classList.remove("arrive"), { once: true });
+  }
+}
+function peelOff(key, rec) {
+  rec.el.classList.add("leaving");
+  const finish = () => {
+    rec.el.remove();
+    if (store.get(key) === rec) store.delete(key);
+    refreshColCounts();
+    applyFilter();
+    refreshParkedToggle();
+  };
+  if (reduceMotion()) {
+    finish();
+    return;
+  }
+  setTimeout(finish, 400);
+}
+function chips(projects) {
+  const opts = [
+    ["all", "All projects"],
+    ["chat", "Chat-scoped"],
+    ["cross", "Across chats"],
+    ...projects.map(p => [p, p])
+  ];
+  const key = opts.map(o => o[0]).join("|") + "#" + filter;
+  if (key === chipKey) return;
+  chipKey = key;
+  const box = document.getElementById("chips");
+  box.innerHTML = "";
+  opts.forEach(([id, label]) => {
+    const b = document.createElement("button");
+    b.className = "chip" + (filter === id ? " on" : "");
+    b.type = "button";
+    b.textContent = label;
+    b.addEventListener("click", () => { filter = id; chipKey = ""; chips(projects); applyFilter(); });
+    box.append(b);
+  });
+}
+async function act(slug, action, el) {
+  if (action === "peel" && el && !reduceMotion()) el.classList.add("leaving");
+  try {
+    await fetch("/api/board", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug, action })
+    });
+  } catch (e) {}
+  setTimeout(load, action === "peel" && !reduceMotion() ? 380 : 40);
+}
+function sync(notes) {
+  const seen = new Set();
+  notes.forEach(n => {
+    const k = noteKey(n);
+    if (!k || k === "::") return;
+    seen.add(k);
+    const rec = store.get(k);
+    if (!rec) {
+      const el = makeNote(n);
+      store.set(k, { el, note: n, sig: sig(n) });
+      if (document.documentElement.classList.contains("embed")) mount(el, n, false);
+      else mount(el, n, true);
+      return;
+    }
+    rec.el.querySelector(".age").textContent = age(n.age_s);
+    if (rec.sig !== sig(n)) {
+      fillTexts(rec.el, n);
+      rec.sig = sig(n);
+    }
+    if (rec.note.lane !== n.lane) {
+      rec.el.classList.add("leaving");
+      const el = rec.el;
+      const wait = reduceMotion() ? 0 : 360;
+      setTimeout(() => {
+        el.classList.remove("leaving");
+        mount(el, n, true);
+        refreshColCounts();
+        applyFilter();
+        refreshParkedToggle();
+      }, wait);
+    } else if (elNeedsMove(rec.el, n)) {
+      mount(rec.el, n, false);
+    }
+    rec.note = n;
+  });
+  store.forEach((rec, key) => {
+    if (!seen.has(key) && !rec.el.classList.contains("leaving")) peelOff(key, rec);
+  });
+  refreshColCounts();
+  applyFilter();
+  refreshParkedToggle();
+}
+function elNeedsMove(el, n) {
+  const dest = parentFor(n);
+  return el.parentNode !== dest;
+}
+async function load() {
+  try {
+    const j = await (await fetch("/api/board", { cache: "no-store" })).json();
+    if (!j || j.ok === false) {
+      document.getElementById("counts").textContent = "board offline";
+      return;
+    }
+    const notes = j.notes || [];
+    const live = notes.filter(n => n.lane === "live");
+    const parked = notes.filter(n => n.lane === "parked");
+    const gutter = notes.filter(n => n.lane === "gutter");
+    document.getElementById("counts").innerHTML =
+      "live <b>" + live.length + "</b> · gutter <b>" + gutter.length +
+      "</b> · parked <b>" + parked.length + "</b>";
+    document.getElementById("tabbadge").textContent = String(live.length + parked.length + gutter.length);
+    document.getElementById("sub").textContent =
+      (j.projects || []).join(" · ") + " · updates while open";
+    activeSet = new Set(j.projects || []);
+    if (j.theme === "void" || j.theme === "cork") applyTheme(j.theme);
+    chips(j.projects || []);
+    sync(notes);
+  } catch (e) {
+    document.getElementById("counts").textContent = "board offline";
+  }
+}
+bindHScroll(document.getElementById("gutter-notes"));
+bindHScroll(document.getElementById("parked"));
+const parkedBtn = document.getElementById("parked-toggle");
+if (parkedBtn) {
+  parkedBtn.addEventListener("click", () => {
+    const sec = document.getElementById("parked-sec");
+    if (!sec) return;
+    sec.hidden = !sec.hidden;
+    parkedBtn.setAttribute("aria-expanded", sec.hidden ? "false" : "true");
+    if (!sec.hidden) {
+      const rail = document.getElementById("parked");
+      if (rail) rail.focus();
+      syncStripNav();
+    }
+  });
+}
+const step = (dir) => {
+  const rail = document.getElementById("parked");
+  if (!rail) return;
+  rail.scrollBy({ left: dir * Math.max(240, rail.clientWidth * 0.8), behavior: reduceMotion() ? "auto" : "smooth" });
+};
+const prev = document.getElementById("parked-prev");
+const next = document.getElementById("parked-next");
+if (prev) prev.addEventListener("click", () => step(-1));
+if (next) next.addEventListener("click", () => step(1));
+applyTheme(themeOf());
+const skinBtn = document.getElementById("skin-toggle");
+if (skinBtn) {
+  skinBtn.addEventListener("click", () => {
+    const next = themeOf() === "void" ? "cork" : "void";
+    applyTheme(next);
+    act(next, "theme");
+  });
+}
+load();
+if (!document.documentElement.classList.contains("embed")) {
+  setInterval(load, 2000);
+}
+</script>
+</body>
+</html>
