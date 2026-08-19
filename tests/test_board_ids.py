@@ -11,20 +11,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from serve import classify_notes, parse_index
 
 SAMPLE = """# index
-## [2026-08-15T09:12+02] DONE | alphane-ep06-p6-008
-- From: Alphane @ host
+## [2026-08-15T09:12+02] DONE | reused-slug-008
+- From: Redwood @ host
 - Status: OPEN
 - Body: newer done
-## [2026-08-15T08:57+02] ASK | alphane-ep06-p6-008
-- From: Alphane @ host
+## [2026-08-15T08:57+02] ASK | reused-slug-008
+- From: Redwood @ host
 - Status: ANSWERED
 - Body: mid answered
-## [2026-08-15T08:34+02] ASK | alphane-ep06-p6-008
-- From: Alphane @ host
+## [2026-08-15T08:34+02] ASK | reused-slug-008
+- From: Redwood @ host
 - Status: OPEN
 - Body: older ask still live
-## [2026-08-15T09:12+02] ASK | alphane-ep06-p6-009
-- From: Alphane @ host
+## [2026-08-15T09:12+02] ASK | reused-slug-009
+- From: Redwood @ host
 - Status: OPEN
 - Body: next 009
 """
@@ -34,7 +34,7 @@ class BoardIds(unittest.TestCase):
     def test_reused_slug_gets_distinct_stable_ids(self):
         a = parse_index(SAMPLE)
         b = parse_index(SAMPLE)
-        eights = [n for n in a if n["slug"] == "alphane-ep06-p6-008"]
+        eights = [n for n in a if n["slug"] == "reused-slug-008"]
         self.assertEqual(len(eights), 3)
         ids = [n["id"] for n in eights]
         self.assertEqual(len(set(ids)), 3, "each heading is its own note")
@@ -66,20 +66,20 @@ class BoardIds(unittest.TestCase):
 
     def test_dashboard_live_includes_decide_learn_find(self):
         text = """
-## [2026-08-15T11:16+02] DECIDE | alphane-shadow-board
-- From: Alphane @ host
+## [2026-08-15T11:16+02] DECIDE | shadow-board-note
+- From: Redwood @ host
 - Status: OPEN
 - Body: shadow
 ## [2026-08-15T11:09+02] LEARN | notice-board-heading-ids
-- From: GrokBuild @ host
+- From: Studio @ host
 - Status: OPEN
 - Body: ids
 ## [2026-08-15T11:00+02] FIND | wiki-catalog
-- From: GrokBuild @ host
+- From: Studio @ host
 - Status: OPEN
 - Body: find
 ## [2026-08-15T10:00+02] DONE | old-done
-- From: GrokBuild @ host
+- From: Studio @ host
 - Status: OPEN
 - Body: done
 """
@@ -87,7 +87,7 @@ class BoardIds(unittest.TestCase):
             parse_index(text), {}, datetime(2026, 8, 15, 12, 0, tzinfo=timezone.utc)
         )
         lane = {n["slug"]: n["lane"] for n in out}
-        self.assertEqual(lane["alphane-shadow-board"], "live")
+        self.assertEqual(lane["shadow-board-note"], "live")
         self.assertEqual(lane["notice-board-heading-ids"], "live")
         self.assertEqual(lane["wiki-catalog"], "live")
         self.assertEqual(lane["old-done"], "pulled")

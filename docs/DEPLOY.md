@@ -33,7 +33,7 @@ rsync -a --exclude '*.bkp' \
 
 Grok must see `~/.grok/skills/notice-board/SKILL.md`. Agents invoke the skill themselves. They do not wait for the human. They do not announce the post.
 
-Every project chat that should appear must have the skill active. Four `/new` sessions is four invocations.
+Every project chat that should appear must have the skill active. Four `/new` sessions is four invocations (say folder-a through folder-d, not other product names).
 
 Point the skill at an index stickynote can read. Default elsewhere: `$VAULT` or `~/vault` if `00-Inbox` exists. `scripts/board.sh ensure` creates the index directory if missing.
 

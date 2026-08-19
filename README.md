@@ -16,7 +16,7 @@ A corkboard in the browser at `/notice-board` (void skin is a switch on the same
 
 You install Grok on a host. Each time you open Grok in a directory, that directory is the active project for that chat.
 
-Install the notice-board skill **once** on that host (user-scope). Then, **every** project chat that should show up on the wall must have `/notice-board` active. If you run four `/new` sessions at once — say alphane, a second product, stickynote, and a cockpit — that is four chats. Each one has to invoke the skill. A chat that does not invoke it stays off the wall.
+Install the notice-board skill **once** on that host (user-scope). Then, **every** project chat that should show up on the wall must have `/notice-board` active. If you run four `/new` sessions at once — folder-a, folder-b, folder-c, and this repo — that is four chats. Each one has to invoke the skill. A chat that does not invoke it stays off the wall.
 
 Stickynote itself (`serve.py`) runs **once**, on the Grok host that shows the board:
 

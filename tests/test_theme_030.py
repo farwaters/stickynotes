@@ -14,7 +14,7 @@ import serve
 
 OPEN = """# index
 ## [2026-08-18T10:00+02] ASK | sample-ask-note
-- From: Alphane @ host
+- From: Redwood @ host
 - Status: OPEN
 - Body: live ask
 """

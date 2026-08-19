@@ -17,12 +17,12 @@ NOW = datetime(2026, 8, 18, 12, 0, tzinfo=timezone.utc)
 
 OPEN = """# index
 ## [2026-08-18T10:00+02] ASK | sample-ask-note
-- From: Alphane @ host
+- From: Redwood @ host
 - Status: OPEN
 - Scope: cross
 - Body: live ask
 ## [2026-08-18T09:00+02] DONE | sample-done-note
-- From: Alphane @ host
+- From: Redwood @ host
 - Status: OPEN
 - Body: agent closed
 ## [2026-08-18T08:00+02] ASK | hex-from-chat
@@ -32,7 +32,7 @@ OPEN = """# index
 - Scope: chat
 - Body: notice-board only
 ## [2026-08-18T07:00+02] DECIDE | other-open
-- From: ClearMyPI @ host
+- From: Beacon @ host
 - Status: OPEN
 - Body: other live
 """
@@ -67,31 +67,31 @@ class Classify022(unittest.TestCase):
 
     def test_hex_project_not_on_active_bar(self):
         projects = serve.active_projects(_notes({}), {}, NOW)
-        self.assertIn("Alphane", projects)
-        self.assertIn("ClearMyPI", projects)
+        self.assertIn("Redwood", projects)
+        self.assertIn("Beacon", projects)
         self.assertNotIn("01a0116b", projects)
         self.assertFalse(any(p.startswith("chat:") for p in projects))
 
     def test_afterglow_4h_keeps_project_5h_drops(self):
         parked = _notes({"parked": {"sample-ask-note": NOW.isoformat()}})
-        glow_ok = {"afterglow": {"Alphane": (NOW - timedelta(hours=3, minutes=50)).isoformat()}}
-        glow_old = {"afterglow": {"Alphane": (NOW - timedelta(hours=5)).isoformat()}}
-        # no live Alphane (ask is parked); ClearMyPI still live
-        self.assertIn("Alphane", serve.active_projects(parked, glow_ok, NOW))
-        self.assertNotIn("Alphane", serve.active_projects(parked, glow_old, NOW))
-        self.assertIn("ClearMyPI", serve.active_projects(parked, glow_old, NOW))
+        glow_ok = {"afterglow": {"Redwood": (NOW - timedelta(hours=3, minutes=50)).isoformat()}}
+        glow_old = {"afterglow": {"Redwood": (NOW - timedelta(hours=5)).isoformat()}}
+        # no live Redwood (ask is parked); Beacon still live
+        self.assertIn("Redwood", serve.active_projects(parked, glow_ok, NOW))
+        self.assertNotIn("Redwood", serve.active_projects(parked, glow_old, NOW))
+        self.assertIn("Beacon", serve.active_projects(parked, glow_old, NOW))
 
     def test_hidden_project_leaves_the_bar(self):
-        view = {"hidden_projects": {"Alphane": NOW.isoformat()}}
+        view = {"hidden_projects": {"Redwood": NOW.isoformat()}}
         projects = serve.active_projects(_notes(view), view, NOW)
-        self.assertNotIn("Alphane", projects)
-        self.assertIn("ClearMyPI", projects)
+        self.assertNotIn("Redwood", projects)
+        self.assertIn("Beacon", projects)
 
     def test_is_hex_chat(self):
         self.assertTrue(serve.is_hex_chat("01a0116b"))
         self.assertTrue(serve.is_hex_chat("chat:01a0116b"))
         self.assertTrue(serve.is_hex_chat("01a01164-ee71-7380-859f-fe7cc1daa582"))
-        self.assertFalse(serve.is_hex_chat("Alphane"))
+        self.assertFalse(serve.is_hex_chat("Redwood"))
         self.assertFalse(serve.is_hex_chat("stickynote"))
 
 
@@ -123,7 +123,7 @@ class Actions022(unittest.TestCase):
         self.assertTrue(r.get("ok"))
         by = {n["slug"]: n for n in r["notes"]}
         self.assertEqual(by["sample-ask-note"]["lane"], "gutter")
-        self.assertIn("Alphane", r["projects"])
+        self.assertIn("Redwood", r["projects"])
 
     def test_restick_appends_heading_and_returns_live(self):
         serve.apply_board_action("sample-ask-note", "peel")
@@ -147,10 +147,10 @@ class Actions022(unittest.TestCase):
         self.assertNotIn("sample-ask-note", slugs)
 
     def test_hide_project_drops_chip(self):
-        r = serve.apply_board_action("Alphane", "hide")
+        r = serve.apply_board_action("Redwood", "hide")
         self.assertTrue(r.get("ok"))
-        self.assertNotIn("Alphane", r["projects"])
-        self.assertIn("ClearMyPI", r["projects"])
+        self.assertNotIn("Redwood", r["projects"])
+        self.assertIn("Beacon", r["projects"])
 
 
 if __name__ == "__main__":

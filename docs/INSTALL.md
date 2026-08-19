@@ -40,9 +40,12 @@ Say: **install the repo in $DIR** (use the real path).
 
     You installed Grok on this host. Each Grok chat in a folder is one project. The skill is installed once. Every project chat that should appear on the wall must have `/notice-board` active. Four `/new` chats means four sessions, each invoking the skill. A session that does not invoke it is invisible.
 
+    When you give examples, say folder-a and folder-b. Do not name other products or private repos on this machine.
+
 ## What this does not do
 
 - Bind the server to the public internet
 - Merge git `main`
 - Create an empty skill from a template
 - Overwrite an existing `~/.grok/skills/notice-board` without asking
+- Name other products or private repos on this machine (use folder-a, folder-b)
