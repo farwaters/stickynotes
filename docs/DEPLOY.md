@@ -22,7 +22,9 @@ Grok-facing steps: [`INSTALL.md`](INSTALL.md).
 
 ## 1. Install the notice-board skill
 
-From this repo (or a clone), after the human says yes:
+From this repo (or a clone). If `~/.grok/skills/notice-board/SKILL.md` **already exists**, stop. Tell the user the path. Do **not** copy this tree over it unless they asked to replace it. A host skill may be newer than this bundle.
+
+If the file is missing, after the human says yes:
 
 ```bash
 mkdir -p ~/.grok/skills/notice-board
@@ -33,9 +35,11 @@ rsync -a --exclude '*.bkp' \
 
 Grok must see `~/.grok/skills/notice-board/SKILL.md`. Agents invoke the skill themselves. They do not wait for the human. They do not announce the post.
 
+`board.sh ensure` and `summary` run `scripts/housekeep.py` (0 LLM): OPEN cap 40, closed/stale/overflow move to `YYYY-MM.md`. Stickynote does not compact. Notes that leave the live index fly off the wall. That is success. Do not point `NOTICE_BOARD_INDEX` at the monthly archive.
+
 Every project chat that should appear must have the skill active. Four `/new` sessions is four invocations (say folder-a through folder-d, not other product names).
 
-Point the skill at an index stickynote can read. Default elsewhere: `$VAULT` or `~/vault` if `00-Inbox` exists. `scripts/board.sh ensure` creates the index directory if missing.
+Point the skill at an index stickynote can read. Default elsewhere: `$NOTICE_BOARD_VAULT` or `$VAULT` or `~/vault` if `00-Inbox` exists. `scripts/board.sh ensure` seeds the index if missing, then housekeeps.
 
 ## 2. Run stickynote on that same index
 

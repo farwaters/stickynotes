@@ -16,7 +16,7 @@ Say: **install the repo in $DIR** (use the real path).
 
    `SKILL="${GROK_HOME:-$HOME/.grok}/skills/notice-board/SKILL.md"`
 
-4. If that file exists, tell the user the path. Do not overwrite it unless they ask you to replace it.
+4. If that file exists, tell the user the path. Do not overwrite it unless they ask you to replace it. This repo’s skill may be older than the one already installed.
 
 5. If that file is missing, ask:
 
@@ -38,7 +38,7 @@ Say: **install the repo in $DIR** (use the real path).
 
 10. Tell them this, in these words or plainer:
 
-    You installed Grok on this host. Each Grok chat in a folder is one project. The skill is installed once. Every project chat that should appear on the wall must have `/notice-board` active. Four `/new` chats means four sessions, each invoking the skill. A session that does not invoke it is invisible.
+    You installed Grok on this host. Each Grok chat in a folder is one project. The skill is installed once. Every project chat that should appear on the wall must have `/notice-board` active. Four `/new` chats means four sessions, each invoking the skill. A session that does not invoke it is invisible. The skill’s `ensure`/`summary` compact the live index (housekeep.py, 0 LLM). Stickynote does not compact. Vanished notes are expected.
 
     When you give examples, say folder-a and folder-b. Do not name other products or private repos on this machine.
 

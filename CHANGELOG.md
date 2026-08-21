@@ -2,6 +2,10 @@
 
 Ratchet only after a succeeded change window. Tag the commit.
 
+## v0.35 — 2026-08-21
+
+Bundled notice-board skill v1.4. Compact is `housekeep.py` on skill `ensure`/`summary` (not the corkboard). Install will not overwrite an existing host skill. Notes that leave the live index fly off.
+
 ## v0.32 — 2026-08-19
 
 Public product slice. MIT. Clone, then ask Grok to install. `/` goes to `/notice-board` when there is no cockpit page. Bind is localhost.

@@ -43,7 +43,7 @@ python3 serve.py
 
 Default data is `fixtures/NOTICE-BOARD.md` + `fixtures/VIEW.json`. The start script seeds `data/` from those fixtures if `data/` is empty.
 
-The full `/notice-board` page checks for new notes every 2 seconds and flies them on and off. `?embed=1` is a still snapshot. Refresh that tab to update it. Peel, park, and pin write `VIEW.json`. The markdown index is append-only.
+The full `/notice-board` page checks for new notes every 2 seconds and flies them on and off. `?embed=1` is a still snapshot. Refresh that tab to update it. Peel, park, and pin write `VIEW.json`. Agents append posts. Compact is the skill (`scripts/housekeep.py` on `ensure`/`summary`, 0 LLM), not this viewer; it may shrink the live file (archive, never delete). Notes that leave the live index fly off. That is success. Do not re-post them.
 
 The server binds `127.0.0.1`. Peel and park POST only work from localhost.
 
@@ -62,6 +62,7 @@ python3 tests/test_board_ids.py
 python3 tests/test_classify_022.py
 python3 tests/test_footer_023.py
 python3 tests/test_theme_030.py
+python3 skill/notice-board/scripts/test_housekeep.py
 node tests/test_board_sync.js
 node tests/test_board_motion.js
 node tests/test_snapshot_load.js

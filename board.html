@@ -337,9 +337,11 @@
 <body>
   <header class="mast">
     <div class="lockup">
-      <span class="brand">stickynote</span>
+      <span class="brand">SPACEXAI</span>
+      <span class="prod">Grok 4.6</span>
     </div>
     <nav class="tabs">
+      <a href="/" target="spacexai-console" rel="noopener">Cockpit</a>
       <a class="on" href="/notice-board">Notice board <span class="badge" id="tabbadge">0</span></a>
     </nav>
   </header>
@@ -353,7 +355,7 @@
       <div class="meta counts" id="counts">…</div>
       <div class="skin-switch" id="skin-switch" role="group" aria-label="Board skin">
         <span>Cork</span>
-        <button type="button" id="skin-toggle" class="skin-track" role="switch" aria-checked="false" aria-label="Void skin">
+        <button type="button" id="skin-toggle" class="skin-track" role="switch" aria-checked="false" aria-label="SpaceXAI void skin">
           <span class="skin-knob"></span>
         </button>
         <span>Void</span>
@@ -392,7 +394,7 @@ if (/(?:^|[?&])embed(?:=|&|$)/.test(location.search)) {
   document.documentElement.classList.add("embed");
 }
 if (!document.documentElement.classList.contains("embed")) {
-  window.name = "stickynote-board";
+  window.name = "spacexai-board";
 }
 const store = new Map();
 const cols = new Map();
